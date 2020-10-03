@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 import Header from '../../components/Header';
 
@@ -27,7 +27,9 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     async function loadFoods(): Promise<void> {
-      // TODO LOAD FOODS
+      const response = await api.get('/foods');
+
+      setFoods(response.data);
     }
 
     loadFoods();
@@ -49,20 +51,22 @@ const Dashboard: React.FC = () => {
     // TODO UPDATE A FOOD PLATE ON THE API
   }
 
-  async function handleDeleteFood(id: number): Promise<void> {
-    // TODO DELETE A FOOD PLATE FROM THE API
-  }
+  const handleDeleteFood = useCallback((id: number) => {
+    api.delete(`/foods/${id}`);
+
+    setFoods(prevFoods => prevFoods.filter(food => food.id !== id));
+  }, []);
 
   function toggleModal(): void {
     setModalOpen(!modalOpen);
   }
 
-  function toggleEditModal(): void {
+  const toggleEditModal = useCallback(() => {
     setEditModalOpen(!editModalOpen);
-  }
+  }, [editModalOpen]);
 
   function handleEditFood(food: IFoodPlate): void {
-    // TODO SET THE CURRENT EDITING FOOD ID IN THE STATE
+    // setEditingFood(1);
   }
 
   return (
