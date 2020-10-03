@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 
-import Header from '../../components/Header';
-
 import api from '../../services/api';
 
 import Food from '../../components/Food';
+import Header from '../../components/Header';
 import ModalAddFood from '../../components/ModalAddFood';
 import ModalEditFood from '../../components/ModalEditFood';
 
@@ -35,21 +34,32 @@ const Dashboard: React.FC = () => {
     loadFoods();
   }, []);
 
-  async function handleAddFood(
-    food: Omit<IFoodPlate, 'id' | 'available'>,
-  ): Promise<void> {
-    try {
-      // TODO ADD A NEW FOOD PLATE TO THE API
-    } catch (err) {
-      console.log(err);
-    }
-  }
+  const handleAddFood = useCallback(
+    async (food: Omit<IFoodPlate, 'id' | 'available'>) => {
+      try {
+        const response = await api.post('/foods', food);
 
-  async function handleUpdateFood(
-    food: Omit<IFoodPlate, 'id' | 'available'>,
-  ): Promise<void> {
-    // TODO UPDATE A FOOD PLATE ON THE API
-  }
+        setFoods(prevFoods => [...prevFoods, response.data]);
+      } catch (err) {
+        console.log(err);
+      }
+    },
+    [],
+  );
+
+  const handleUpdateFood = useCallback((updatedFood: IFoodPlate) => {
+    api.put(`/foods/${updatedFood.id}`, updatedFood);
+
+    setFoods(prevFoods =>
+      prevFoods.map(food => {
+        if (food.id === updatedFood.id) {
+          return updatedFood;
+        }
+
+        return food;
+      }),
+    );
+  }, []);
 
   const handleDeleteFood = useCallback((id: number) => {
     api.delete(`/foods/${id}`);
@@ -57,17 +67,21 @@ const Dashboard: React.FC = () => {
     setFoods(prevFoods => prevFoods.filter(food => food.id !== id));
   }, []);
 
-  function toggleModal(): void {
-    setModalOpen(!modalOpen);
-  }
+  const toggleModal = useCallback(() => {
+    setModalOpen(prevState => !prevState);
+  }, []);
 
   const toggleEditModal = useCallback(() => {
     setEditModalOpen(!editModalOpen);
   }, [editModalOpen]);
 
-  function handleEditFood(food: IFoodPlate): void {
-    // setEditingFood(1);
-  }
+  const handleEditFood = useCallback(
+    (food: IFoodPlate) => {
+      toggleEditModal();
+      setEditingFood(food);
+    },
+    [toggleEditModal],
+  );
 
   return (
     <>
@@ -92,6 +106,7 @@ const Dashboard: React.FC = () => {
               food={food}
               handleDelete={handleDeleteFood}
               handleEditFood={handleEditFood}
+              handleUpdateFood={handleUpdateFood}
             />
           ))}
       </FoodsContainer>

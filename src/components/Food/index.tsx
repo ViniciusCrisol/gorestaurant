@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-
+import React, { useCallback, useState } from 'react';
 import { FiEdit3, FiTrash } from 'react-icons/fi';
 
 import { Container } from './styles';
@@ -17,18 +16,21 @@ interface IProps {
   food: IFoodPlate;
   handleDelete: (id: number) => void;
   handleEditFood: (food: IFoodPlate) => void;
+  handleUpdateFood: (food: IFoodPlate) => void;
 }
 
 const Food: React.FC<IProps> = ({
   food,
   handleDelete,
   handleEditFood,
+  handleUpdateFood,
 }: IProps) => {
   const [isAvailable, setIsAvailable] = useState(food.available);
 
-  async function toggleAvailable(): Promise<void> {
-    // TODO UPDATE STATUS (available)
-  }
+  const toggleAvailable = useCallback(() => {
+    handleUpdateFood({ ...food, available: !isAvailable });
+    setIsAvailable(prevState => !prevState);
+  }, [handleUpdateFood, isAvailable, food]);
 
   return (
     <Container available={isAvailable}>
